@@ -4,6 +4,7 @@ Handles command execution, sandbox mode, and response parsing.
 """
 import asyncio
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -40,7 +41,7 @@ class GeminiWrapper:
     """
     
     def __init__(self, 
-                 command: str = "gemini-code-assist",
+                 command: str = None,
                  workspace_path: Optional[Path] = None,
                  enable_sandbox: bool = True,
                  timeout: int = 300):
@@ -53,7 +54,8 @@ class GeminiWrapper:
             enable_sandbox: Enable sandbox mode for safe code execution
             timeout: Command timeout in seconds
         """
-        self.command = command
+        # Auto-detect Gemini command or use environment variable
+        self.command = command or os.environ.get("GEMINI_COMMAND") or self._detect_gemini_command()
         self.workspace_path = workspace_path or Path("./agent_workspace")
         self.enable_sandbox = enable_sandbox
         self.timeout = timeout
@@ -62,6 +64,27 @@ class GeminiWrapper:
         
         # Verify Gemini is available
         self._verify_gemini()
+    
+    def _detect_gemini_command(self) -> str:
+        """Auto-detect available Gemini command."""
+        possible_commands = ["gemini", "gemini-code-assist", "gemini-cli", "aistudio"]
+        
+        for cmd in possible_commands:
+            try:
+                result = subprocess.run(
+                    [cmd, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    logger.info(f"Auto-detected Gemini command: {cmd}")
+                    return cmd
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                continue
+        
+        # Fallback to default
+        return "gemini"
     
     def _verify_gemini(self):
         """Verify Gemini CLI is available."""
