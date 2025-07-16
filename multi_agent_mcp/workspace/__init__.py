@@ -1,0 +1,1 @@
+"""Shared workspace management for multi-agent collaboration."""
