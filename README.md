@@ -22,7 +22,7 @@ A comprehensive Python package that enables Claude Code to orchestrate Gemini Co
 
 ### From Source
 ```bash
-git clone <repository-url>
+git clone https://github.com/johnathan-greenaway/multi-agent-assist/
 cd multi-agent-assist
 pip install -e .
 ```
